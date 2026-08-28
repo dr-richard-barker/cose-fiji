@@ -24,3 +24,4 @@ npm-debug.log*
 lib/ImageJ
 # ImageJ build directory
 ImageJ-build/
+vendor/
