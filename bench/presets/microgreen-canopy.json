@@ -1,0 +1,18 @@
+{
+  "name": "microgreen-canopy",
+  "title": "Microgreen Canopy",
+  "subtitle": "Canopy coverage, greenness, texture uniformity",
+  "description": "Quantifies dense microgreen canopies: coverage %, greenness index (ExG), texture variance for harvest readiness.",
+  "method": "HSV hue+saturation → canopy mask → ExG for greenness. No per-plant segmentation (too dense).",
+  "dataType": "overhead microgreen tray images (dense leafy crop, uniform lighting)",
+  "outputFormat": "CSV (single-row summary) + mask overlay",
+  "outputs": [
+    {"name": "CanopyCover", "label": "Canopy coverage", "unit": "%", "description": "Fraction of tray covered by green foliage", "ontologyTerm": null},
+    {"name": "GreenessIndex", "label": "Greenness index", "unit": "normalized", "description": "ExG; 0=none, 1=pure green", "ontologyTerm": null},
+    {"name": "TextureVariance", "label": "Texture variance", "unit": "variance", "description": "Uniformity of canopy. Lower = more uniform.", "ontologyTerm": null},
+    {"name": "ReadinessScore", "label": "Harvest readiness", "unit": "score", "description": "0–1 score based on coverage + uniformity", "ontologyTerm": null}
+  ],
+  "parameters": [
+    {"name": "minCover", "type": "number", "label": "Minimum coverage %", "default": 70, "description": "If below this, harvest not recommended."}
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "rosettes",
+  "title": "Rosette Morphology",
+  "subtitle": "Individual rosette area, shape, and arrangement",
+  "description": "Segments and measures individual plant rosettes: leaf area, perimeter, circularity, compactness. CIELAB a* threshold robust to LED color casts.",
+  "method": "CIELAB a* threshold (isolates green channel from background) → size gate → watershed segmentation → measure each rosette.",
+  "dataType": "overhead rosette images (Arabidopsis, lettuce, seedlings in petri or soil)",
+  "outputFormat": "CSV (one row per rosette) + ROI",
+  "outputs": [
+    {"name": "Area", "label": "Rosette area", "unit": "mm²", "description": "Leaf area per rosette", "ontologyTerm": "PO:0025029"},
+    {"name": "Perimeter", "label": "Rosette perimeter", "unit": "mm", "description": "Boundary length", "ontologyTerm": null},
+    {"name": "Circularity", "label": "Circularity", "unit": "ratio", "description": "4π×Area/Perimeter². 1=perfect circle", "ontologyTerm": null},
+    {"name": "Compactness", "label": "Compactness", "unit": "ratio", "description": "Inverse of circularity; 0=spread leaves, 1=compact", "ontologyTerm": null}
+  ],
+  "parameters": [
+    {"name": "astarThreshold", "type": "number", "label": "CIELAB a* threshold", "default": 5, "description": "Green channel separation. Higher = more selective."},
+    {"name": "minAreaMm2", "type": "number", "label": "Minimum rosette area", "default": 100, "unit": "mm²", "description": "Rosettes smaller than this are ignored."}
+  ]
+}

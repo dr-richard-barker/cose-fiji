@@ -1,0 +1,18 @@
+{
+  "name": "petri-seedlings",
+  "title": "Seedling Germination & Growth",
+  "subtitle": "Germination%, hypocotyl length, root length on agar plates",
+  "description": "Quantifies seedling germination and early-stage growth on petri dishes. Measures hypocotyl and root length, germination rate.",
+  "method": "Petri dish ROI → invert (background dark) → threshold → skeletonize → measure hypocotyl and root separately via seed boundary.",
+  "dataType": "seedlings on agar plates (vertical orientation, good contrast between seedling and medium)",
+  "outputFormat": "CSV + ROI",
+  "outputs": [
+    {"name": "GerminationRate", "label": "Germination rate", "unit": "%", "description": "Fraction of seeds with visible growth", "ontologyTerm": null},
+    {"name": "SeedlingCount", "label": "Seedling count", "unit": "count", "description": "Number of individual seedlings", "ontologyTerm": null},
+    {"name": "HypocotylLength", "label": "Mean hypocotyl length", "unit": "mm", "description": "Length of stem above root", "ontologyTerm": "PO:0000075"},
+    {"name": "RootLength", "label": "Mean root length", "unit": "mm", "description": "Primary root length", "ontologyTerm": "PO:0015017"}
+  ],
+  "parameters": [
+    {"name": "seedThreshold", "type": "number", "label": "Seed area threshold", "default": 20, "unit": "mm²", "description": "Seeds smaller than this are ignored."}
+  ]
+}

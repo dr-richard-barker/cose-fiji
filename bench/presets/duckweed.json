@@ -1,0 +1,18 @@
+{
+  "name": "duckweed",
+  "title": "Duckweed Growth",
+  "subtitle": "Frond count, area, relative growth rate (RGR)",
+  "description": "Quantifies duckweed (aquatic plant) growth: individual frond count, total area, and RGR when comparing a time series.",
+  "method": "HSV threshold → watershed → measure each frond. RGR computed as ln(Area2/Area1) / (t2-t1).",
+  "dataType": "duckweed on water surface (overhead view, good contrast, no debris)",
+  "outputFormat": "CSV (one row per frond, one summary row)",
+  "outputs": [
+    {"name": "FrondCount", "label": "Frond count", "unit": "count", "description": "Number of individual fronds", "ontologyTerm": null},
+    {"name": "TotalArea", "label": "Total frond area", "unit": "mm²", "description": "Sum of all frond areas", "ontologyTerm": "PO:0025029"},
+    {"name": "MeanFrondArea", "label": "Mean frond area", "unit": "mm²", "description": "Average area per frond", "ontologyTerm": null},
+    {"name": "RGR", "label": "Relative growth rate", "unit": "day⁻¹", "description": "ln(Area2/Area1) / days. Requires two time points.", "ontologyTerm": null}
+  ],
+  "parameters": [
+    {"name": "minFrondArea", "type": "number", "label": "Minimum frond area", "default": 10, "unit": "mm²", "description": "Fronds smaller than this are ignored."}
+  ]
+}

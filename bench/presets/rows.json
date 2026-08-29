@@ -1,0 +1,19 @@
+{
+  "name": "rows",
+  "title": "Plant Rows Analysis",
+  "subtitle": "Row spacing, canopy cover, and plant density",
+  "description": "Quantifies plant row characteristics: spacing, canopy cover%, and plants per row. Detects rows via projection profile peaks and analyzes canopy via ExG (excess green index).",
+  "method": "ExG threshold (2G−R−B) → per-row ROI via projection-profile peaks → area measurement. Robust to LED color casts.",
+  "dataType": "overhead row images (plants in neat rows, good contrast)",
+  "outputFormat": "CSV + ROI overlay",
+  "outputs": [
+    {"name": "RowSpacing", "label": "Mean row spacing", "unit": "mm", "description": "Distance between adjacent row centers", "ontologyTerm": null},
+    {"name": "CanopyCover", "label": "Canopy cover", "unit": "%", "description": "Fraction of image occupied by green foliage", "ontologyTerm": "PATO:0000014"},
+    {"name": "PlantsPerRow", "label": "Mean plants per row", "unit": "count", "description": "Number of plant clusters detected per row", "ontologyTerm": null},
+    {"name": "RowCount", "label": "Total rows", "unit": "count", "description": "Number of distinct rows detected", "ontologyTerm": null}
+  ],
+  "parameters": [
+    {"name": "exgThreshold", "type": "number", "label": "ExG threshold", "default": 0.3, "min": 0, "max": 1, "description": "Green-channel threshold. Higher = less sensitive to shadows."},
+    {"name": "minRowHeight", "type": "number", "label": "Minimum row height", "default": 50, "unit": "px", "description": "Rows narrower than this are ignored (noise)."}
+  ]
+}
