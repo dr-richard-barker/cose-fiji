@@ -9,6 +9,11 @@ on:
   pull_request:
     branches: [ main ]
 
+# peaceiris/actions-gh-pages pushes the built site to the gh-pages branch, which
+# needs write access. A new repository's GITHUB_TOKEN is read-only by default.
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
