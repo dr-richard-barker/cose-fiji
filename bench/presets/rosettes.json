@@ -1,0 +1,55 @@
+{
+  "name": "rosettes",
+  "title": "Rosette Morphology",
+  "subtitle": "Per-rosette area and shape from overhead images",
+  "description": "Segments individual rosettes and measures area, perimeter, circularity, Feret diameter and compactness. One row per rosette.",
+  "method": "CIE L*a*b* conversion (Lab Stack); foliage is separated on the a* channel, where green sits at negative a*. This is far more stable than an RGB threshold under the colour casts of LED growth lighting. Otsu threshold, despeckle, fill holes, watershed to split rosettes touching at the leaf margins.",
+  "dataType": "overhead rosette images (Arabidopsis, lettuce, brassica seedlings)",
+  "granularity": "one row per rosette",
+  "outputs": [
+    {
+      "name": "Area",
+      "label": "Rosette area",
+      "unit": "mm^2",
+      "description": "Projected leaf area of one rosette",
+      "ontologyTerm": "TO:0000540"
+    },
+    {
+      "name": "Perim.",
+      "label": "Perimeter",
+      "unit": "mm",
+      "description": "Outline length of the rosette",
+      "ontologyTerm": null
+    },
+    {
+      "name": "Circ.",
+      "label": "Circularity",
+      "unit": "ratio",
+      "description": "4*pi*Area/Perimeter^2; 1.0 is a perfect disc",
+      "ontologyTerm": null
+    },
+    {
+      "name": "Feret",
+      "label": "Feret diameter",
+      "unit": "mm",
+      "description": "Longest caliper diameter",
+      "ontologyTerm": null
+    },
+    {
+      "name": "Compactness",
+      "label": "Compactness",
+      "unit": "ratio",
+      "description": "Area / (pi/4 * Feret^2). 1.0 is a tight disc; lower means a spread, deeply lobed rosette.",
+      "ontologyTerm": null
+    }
+  ],
+  "notes": [
+    "Structure term for the measured object: PO:0025615 (rosette)."
+  ],
+  "presetVersion": "1.0",
+  "commonColumns": {
+    "Label": "Source image title",
+    "Unit": "Spatial unit of every length/area column",
+    "Calibrated": "1 if a scale was applied; 0 means all values are in pixels"
+  }
+}

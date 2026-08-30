@@ -1,0 +1,62 @@
+{
+  "name": "roots",
+  "title": "Root System Analysis",
+  "subtitle": "Calibrated root-system metrics, with SmartRoot for full tracing",
+  "description": "Whole-root-system metrics from a calibrated image: total length, projected area, depth, lateral spread, convex hull and root length density. One summary row per image.",
+  "method": "Rolling-ball background subtraction (radius 50 px) to flatten plate illumination, Otsu threshold, despeckle+open, then a core-ImageJ binary skeleton. Total length = skeleton pixel count x pixel width. This build has no Fiji Ridge Detection or AnalyzeSkeleton, so per-lateral topology is not computed here; trace with Plugins > SmartRoot > SR Explorer for that.",
+  "dataType": "root systems on plates or rhizotrons, dark roots on a pale background",
+  "granularity": "one row per image",
+  "outputs": [
+    {
+      "name": "TotalLength",
+      "label": "Total root length",
+      "unit": "mm",
+      "description": "Skeleton length summed over the whole root system. Approximate: under-reads diagonal runs by up to ~8%.",
+      "ontologyTerm": "TO:0000227"
+    },
+    {
+      "name": "RootSystemArea",
+      "label": "Projected root area",
+      "unit": "mm^2",
+      "description": "Thresholded area of the root system",
+      "ontologyTerm": null
+    },
+    {
+      "name": "MaxDepth",
+      "label": "Maximum depth",
+      "unit": "mm",
+      "description": "Bounding-box height of the root system",
+      "ontologyTerm": null
+    },
+    {
+      "name": "LateralSpread",
+      "label": "Lateral spread",
+      "unit": "mm",
+      "description": "Bounding-box width of the root system",
+      "ontologyTerm": null
+    },
+    {
+      "name": "ConvexHullArea",
+      "label": "Convex hull area",
+      "unit": "mm^2",
+      "description": "Area of the convex hull enclosing the root system",
+      "ontologyTerm": null
+    },
+    {
+      "name": "RootLengthDensity",
+      "label": "Root length density",
+      "unit": "mm/mm^2",
+      "description": "Total length divided by convex hull area",
+      "ontologyTerm": null
+    }
+  ],
+  "notes": [
+    "Lateral root number (TO:0001013) requires SmartRoot tracing and is not produced by this macro."
+  ],
+  "presetVersion": "1.0",
+  "commonColumns": {
+    "Label": "Source image title",
+    "Unit": "Spatial unit of every length/area column",
+    "Calibrated": "1 if a scale was applied; 0 means all values are in pixels"
+  }
+}

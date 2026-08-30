@@ -1,0 +1,52 @@
+{
+  "name": "rows",
+  "title": "Plant Rows",
+  "subtitle": "Canopy cover and row geometry for row-sown stands",
+  "description": "Canopy cover, detected row count, mean row spacing and plants per row for plants grown in rows. One summary row per image.",
+  "method": "ExG = 2G - R - B (Woebbecke et al. 1995) computed in 32-bit so the subtraction is not clipped, Otsu threshold, despeckle. Row centres from the horizontal projection profile of the mask, taking contiguous runs above 20% of the profile maximum as rows.",
+  "dataType": "overhead images of plants sown in rows",
+  "granularity": "one row per image",
+  "outputs": [
+    {
+      "name": "CanopyCover",
+      "label": "Canopy cover",
+      "unit": "%",
+      "description": "Percentage of image area classified as vegetation",
+      "ontologyTerm": null
+    },
+    {
+      "name": "RowCount",
+      "label": "Rows detected",
+      "unit": "count",
+      "description": "Number of rows found in the projection profile",
+      "ontologyTerm": null
+    },
+    {
+      "name": "RowSpacing",
+      "label": "Mean row spacing",
+      "unit": "mm",
+      "description": "Mean distance between adjacent row centres",
+      "ontologyTerm": null
+    },
+    {
+      "name": "PlantsPerRow",
+      "label": "Plants per row",
+      "unit": "count",
+      "description": "Plant clusters divided by row count",
+      "ontologyTerm": null
+    },
+    {
+      "name": "ClusterCount",
+      "label": "Plant clusters",
+      "unit": "count",
+      "description": "Total connected vegetation clusters",
+      "ontologyTerm": null
+    }
+  ],
+  "presetVersion": "1.0",
+  "commonColumns": {
+    "Label": "Source image title",
+    "Unit": "Spatial unit of every length/area column",
+    "Calibrated": "1 if a scale was applied; 0 means all values are in pixels"
+  }
+}
