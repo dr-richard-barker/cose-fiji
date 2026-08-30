@@ -1,18 +1,41 @@
 {
   "name": "duckweed",
-  "title": "Duckweed Growth",
-  "subtitle": "Frond count, area, relative growth rate (RGR)",
-  "description": "Quantifies duckweed (aquatic plant) growth: individual frond count, total area, and RGR when comparing a time series.",
-  "method": "HSV threshold → watershed → measure each frond. RGR computed as ln(Area2/Area1) / (t2-t1).",
-  "dataType": "duckweed on water surface (overhead view, good contrast, no debris)",
-  "outputFormat": "CSV (one row per frond, one summary row)",
+  "title": "Duckweed Fronds",
+  "subtitle": "Frond count and area for floating aquatic plants",
+  "description": "Counts individual fronds and measures total and mean frond area for duckweed on a water surface. One summary row per image.",
+  "method": "HSB conversion; fronds = hue 45-115 AND saturation >= 50, which rejects grey specular reflection off the water. Despeckle, morphological closing, fill holes, then watershed so touching colonies still resolve as separate fronds.",
+  "dataType": "overhead images of Lemna, Landoltia or Wolffia on still water",
+  "granularity": "one row per image",
   "outputs": [
-    {"name": "FrondCount", "label": "Frond count", "unit": "count", "description": "Number of individual fronds", "ontologyTerm": null},
-    {"name": "TotalArea", "label": "Total frond area", "unit": "mm²", "description": "Sum of all frond areas", "ontologyTerm": "PO:0025029"},
-    {"name": "MeanFrondArea", "label": "Mean frond area", "unit": "mm²", "description": "Average area per frond", "ontologyTerm": null},
-    {"name": "RGR", "label": "Relative growth rate", "unit": "day⁻¹", "description": "ln(Area2/Area1) / days. Requires two time points.", "ontologyTerm": null}
+    {
+      "name": "FrondCount",
+      "label": "Frond count",
+      "unit": "count",
+      "description": "Number of separated fronds",
+      "ontologyTerm": null
+    },
+    {
+      "name": "TotalArea",
+      "label": "Total frond area",
+      "unit": "mm^2",
+      "description": "Summed area of all fronds",
+      "ontologyTerm": null
+    },
+    {
+      "name": "MeanFrondArea",
+      "label": "Mean frond area",
+      "unit": "mm^2",
+      "description": "TotalArea divided by FrondCount",
+      "ontologyTerm": null
+    }
   ],
-  "parameters": [
-    {"name": "minFrondArea", "type": "number", "label": "Minimum frond area", "default": 10, "unit": "mm²", "description": "Fronds smaller than this are ignored."}
-  ]
+  "notes": [
+    "Relative growth rate needs two time points and is deliberately not emitted from a single image."
+  ],
+  "presetVersion": "1.0",
+  "commonColumns": {
+    "Label": "Source image title",
+    "Unit": "Spatial unit of every length/area column",
+    "Calibrated": "1 if a scale was applied; 0 means all values are in pixels"
+  }
 }

@@ -1,19 +1,55 @@
 {
   "name": "rosettes",
   "title": "Rosette Morphology",
-  "subtitle": "Individual rosette area, shape, and arrangement",
-  "description": "Segments and measures individual plant rosettes: leaf area, perimeter, circularity, compactness. CIELAB a* threshold robust to LED color casts.",
-  "method": "CIELAB a* threshold (isolates green channel from background) → size gate → watershed segmentation → measure each rosette.",
-  "dataType": "overhead rosette images (Arabidopsis, lettuce, seedlings in petri or soil)",
-  "outputFormat": "CSV (one row per rosette) + ROI",
+  "subtitle": "Per-rosette area and shape from overhead images",
+  "description": "Segments individual rosettes and measures area, perimeter, circularity, Feret diameter and compactness. One row per rosette.",
+  "method": "CIE L*a*b* conversion (Lab Stack); foliage is separated on the a* channel, where green sits at negative a*. This is far more stable than an RGB threshold under the colour casts of LED growth lighting. Otsu threshold, despeckle, fill holes, watershed to split rosettes touching at the leaf margins.",
+  "dataType": "overhead rosette images (Arabidopsis, lettuce, brassica seedlings)",
+  "granularity": "one row per rosette",
   "outputs": [
-    {"name": "Area", "label": "Rosette area", "unit": "mm²", "description": "Leaf area per rosette", "ontologyTerm": "PO:0025029"},
-    {"name": "Perimeter", "label": "Rosette perimeter", "unit": "mm", "description": "Boundary length", "ontologyTerm": null},
-    {"name": "Circularity", "label": "Circularity", "unit": "ratio", "description": "4π×Area/Perimeter². 1=perfect circle", "ontologyTerm": null},
-    {"name": "Compactness", "label": "Compactness", "unit": "ratio", "description": "Inverse of circularity; 0=spread leaves, 1=compact", "ontologyTerm": null}
+    {
+      "name": "Area",
+      "label": "Rosette area",
+      "unit": "mm^2",
+      "description": "Projected leaf area of one rosette",
+      "ontologyTerm": "TO:0000540"
+    },
+    {
+      "name": "Perim.",
+      "label": "Perimeter",
+      "unit": "mm",
+      "description": "Outline length of the rosette",
+      "ontologyTerm": null
+    },
+    {
+      "name": "Circ.",
+      "label": "Circularity",
+      "unit": "ratio",
+      "description": "4*pi*Area/Perimeter^2; 1.0 is a perfect disc",
+      "ontologyTerm": null
+    },
+    {
+      "name": "Feret",
+      "label": "Feret diameter",
+      "unit": "mm",
+      "description": "Longest caliper diameter",
+      "ontologyTerm": null
+    },
+    {
+      "name": "Compactness",
+      "label": "Compactness",
+      "unit": "ratio",
+      "description": "Area / (pi/4 * Feret^2). 1.0 is a tight disc; lower means a spread, deeply lobed rosette.",
+      "ontologyTerm": null
+    }
   ],
-  "parameters": [
-    {"name": "astarThreshold", "type": "number", "label": "CIELAB a* threshold", "default": 5, "description": "Green channel separation. Higher = more selective."},
-    {"name": "minAreaMm2", "type": "number", "label": "Minimum rosette area", "default": 100, "unit": "mm²", "description": "Rosettes smaller than this are ignored."}
-  ]
+  "notes": [
+    "Structure term for the measured object: PO:0025615 (rosette)."
+  ],
+  "presetVersion": "1.0",
+  "commonColumns": {
+    "Label": "Source image title",
+    "Unit": "Spatial unit of every length/area column",
+    "Calibrated": "1 if a scale was applied; 0 means all values are in pixels"
+  }
 }

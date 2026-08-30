@@ -1,328 +1,269 @@
 /**
- * CoSE FIJI Bench – FAIR Data Export
+ * CoSE FIJI Bench — FAIR export bundle.
  *
- * Bundles analysis results into a downloadable .zip containing:
- *  - measurements.csv (tidy, one row per object)
- *  - dataset.json (MIAPPE v1.2 metadata)
- *  - provenance.json (reproducibility: image URL, macro hash, timestamp, scale source)
- *  - *.rsml (if roots preset)
- *  - roi.geojson (if ROI drawn)
- *  - ro-crate-metadata.json (RO-Crate wrapper)
+ * Packages one analysis into a .zip that a third party can actually re-run:
+ *   measurements.csv          tidy, one row per measured object, units in header
+ *   dataset.json              MIAPPE v1.2-aligned study/variable metadata
+ *   provenance.json           image + macro SHA-256, scale and where it came from
+ *   analysis.ijm              the exact macro that produced the numbers
+ *   roots.rsml                RSML root trace (roots preset only)
+ *   ro-crate-metadata.json    RO-Crate 1.1 wrapper
+ *   README.md, LICENSE        method notes + CC-BY-4.0
  *
- * Requires JSZip (loaded from CDN).
+ * Every hash is computed for real. Nothing in this bundle is a placeholder: if a
+ * value is unknown it is written as null and the README says so, because a
+ * provenance file that invents its own checksums is worse than none.
  */
 
-class FAIRExporter {
-  constructor(bench, preset, results) {
-    this.bench = bench;       // FIJIBench instance
-    this.preset = preset;     // active preset descriptor
-    this.results = results;   // { measurements, roi, log } from preset execution
-    this.files = {};          // { filename: content } for bundling
+import { makeZip, sha256Hex } from './zip.js';
+
+export class FAIRExporter {
+  /**
+   * @param {object} ctx
+   * @param {object} ctx.preset    preset descriptor (from presets/<name>.json)
+   * @param {string} ctx.macro     macro source actually executed
+   * @param {Array}  ctx.rows      measurement rows (array of plain objects)
+   * @param {object} ctx.image     { url, filename, bytes, sha256 }
+   * @param {object} ctx.scale     { pxPerMm, unit, source }
+   * @param {string} ctx.log       ImageJ log text
+   * @param {object} ctx.software  { imagej, cheerpj, plugins[] }
+   * @param {string} ctx.ref       AstroBotany entry uuid, if launched from there
+   */
+  constructor(ctx) {
+    Object.assign(this, ctx);
+    this.createdAt = new Date().toISOString();
+    this.bundleId = (crypto.randomUUID && crypto.randomUUID()) || `fiji-${Date.now()}`;
   }
 
-  /**
-   * Main export: gather all components and create downloadable .zip
-   * @returns {Promise<Blob>} – the .zip file
-   */
-  async export() {
-    const { measurements, roi, log } = this.results;
+  // ---- measurements.csv --------------------------------------------------
+  // Column headers carry units, e.g. "TotalLength (mm)", so a downstream reader
+  // never has to guess whether a number is pixels or millimetres.
+  csv() {
+    const rows = this.rows || [];
+    if (!rows.length) return 'no_measurements\n';
 
-    // 1. CSV: measurements table
-    this.files['measurements.csv'] = this.generateCSV(measurements);
+    const unitFor = {};
+    for (const o of (this.preset.outputs || [])) unitFor[o.name] = o.unit;
 
-    // 2. MIAPPE v1.2 metadata
-    this.files['dataset.json'] = this.generateMIAPPE();
-
-    // 3. Provenance: reproducibility trace
-    this.files['provenance.json'] = this.generateProvenance();
-
-    // 4. RSML (for roots preset)
-    if (this.preset.name === 'roots' && measurements) {
-      this.files['root_structure.rsml'] = this.generateRSML(measurements);
-    }
-
-    // 5. ROI as GeoJSON (if available)
-    if (roi) {
-      this.files['roi.geojson'] = JSON.stringify(roi, null, 2);
-    }
-
-    // 6. RO-Crate metadata
-    this.files['ro-crate-metadata.json'] = this.generateROCrate();
-
-    // 7. README with method description
-    this.files['README.md'] = this.generateREADME();
-
-    // 8. LICENSE (CC-BY-4.0 for data)
-    this.files['LICENSE'] = this.generateLicense();
-
-    // Bundle into .zip
-    const zip = await this.createZip();
-    return zip;
+    const cols = Object.keys(rows[0]);
+    const header = cols.map(c => (unitFor[c] ? `${c} (${unitFor[c]})` : c));
+    const esc = v => {
+      const s = v === null || v === undefined ? '' : String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    return [header.map(esc).join(','), ...rows.map(r => cols.map(c => esc(r[c])).join(','))].join('\n') + '\n';
   }
 
-  /**
-   * Generate tidy CSV from measurements array.
-   * @param {Array<Object>} measurements – array of { name, value, unit } per row
-   * @returns {string} – CSV with header
-   */
-  generateCSV(measurements) {
-    if (!measurements || measurements.length === 0) {
-      return 'name,value,unit\n';
-    }
-
-    const header = ['name', 'value', 'unit', 'timestamp'];
-    const rows = measurements.map(m => [
-      m.name || '',
-      m.value || '',
-      m.unit || '',
-      m.timestamp || new Date().toISOString()
-    ]);
-
-    return [header, ...rows].map(row => row.map(v => `"${v}"`).join(',')).join('\n');
-  }
-
-  /**
-   * Generate MIAPPE v1.2 metadata JSON.
-   * Maps to the MIAPPE checklist: https://github.com/MIAPPE/MIAPPE
-   * @returns {string} – JSON
-   */
-  generateMIAPPE() {
-    const now = new Date().toISOString();
-    const image = this.bench.image || {};
-    const scale = this.bench.scale || {};
-
+  // ---- dataset.json (MIAPPE v1.2) ---------------------------------------
+  miappe() {
     return JSON.stringify({
-      "miappe_version": "1.2",
-      "study": {
-        "title": `${this.preset.title} analysis`,
-        "description": this.preset.description,
-        "submission_date": now.split('T')[0],
-        "public_release_date": now.split('T')[0],
-        "contacts": [
-          {
-            "email": "dr.richard.barker@gmail.com",
-            "institution": "CoSE",
-            "type": "person"
-          }
-        ]
+      miappeVersion: '1.2',
+      investigation: {
+        title: `${this.preset.title} — CoSE FIJI Bench`,
+        description: this.preset.description,
+        submissionDate: this.createdAt.slice(0, 10),
+        license: 'CC-BY-4.0',
       },
-      "plant_materials": {
-        "material_source_description": `Image: ${image.filename || 'unknown'}`
+      study: {
+        studyIdentifier: this.bundleId,
+        studyTitle: `${this.preset.title} of ${this.image?.filename || 'image'}`,
+        observationUnitDescription: this.preset.dataType,
+        // MIAPPE asks where the material came from. We only honestly know the
+        // source image, so that is what we assert — not an invented accession.
+        sourceImage: this.image?.url || null,
+        astrobotanyEntry: this.ref || null,
       },
-      "experimental_design": {
-        "description": this.preset.method,
-        "measurement_unit": scale.unit || "pixel"
-      },
-      "environment": {
-        "environment_description": "Image-based analysis, no controlled environment"
-      },
-      "observed_variables": this.preset.outputs.map(o => ({
-        "variable_name": o.name,
-        "trait_name": o.label,
-        "trait_description": o.description,
-        "measurement_unit": o.unit,
-        "ontology_term": o.ontologyTerm
-      }))
+      observedVariables: (this.preset.outputs || []).map(o => ({
+        variableName: o.name,
+        traitName: o.label,
+        traitDescription: o.description,
+        unitName: o.unit,
+        // Ontology terms are only emitted where the preset actually carries one.
+        traitOntologyTerm: o.ontologyTerm || null,
+        method: this.preset.method,
+      })),
+      dataFiles: [
+        { fileName: 'measurements.csv', fileFormat: 'text/csv', fileDescription: 'Per-object measurements' },
+      ],
     }, null, 2);
   }
 
-  /**
-   * Generate provenance.json for reproducibility.
-   * Includes: image URL, scale source, macro source hash, ImageJ version, timestamp.
-   * @returns {string} – JSON
-   */
-  generateProvenance() {
+  // ---- provenance.json ---------------------------------------------------
+  provenance() {
     return JSON.stringify({
-      "timestamp": new Date().toISOString(),
-      "image": {
-        "url": this.bench.image?.url || null,
-        "filename": this.bench.image?.filename || null,
-        "bytes": this.bench.image?.bytes || null,
-        "sha256": "[computed on export]"  // placeholder; would require crypto API
+      bundleId: this.bundleId,
+      createdAt: this.createdAt,
+      image: {
+        url: this.image?.url ?? null,
+        filename: this.image?.filename ?? null,
+        byteLength: this.image?.bytes ?? null,
+        sha256: this.image?.sha256 ?? null,
       },
-      "scale": {
-        "px_per_mm": this.bench.scale?.pxPerMm || null,
-        "unit": this.bench.scale?.unit || "pixel",
-        "source": this.bench.scale?.source || "none"  // 'aruco-marker', 'manual', 'none'
+      // scaleSource is the load-bearing field: "none" means every length in
+      // measurements.csv is in pixels and must not be reported as millimetres.
+      scale: {
+        pixelsPerMm: this.scale?.pxPerMm ?? null,
+        unit: this.scale?.unit ?? 'pixel',
+        scaleSource: this.scale?.source ?? 'none',
       },
-      "analysis": {
-        "preset": this.preset.name,
-        "preset_version": "1.0",
-        "macro_source": "[embedded in preset]",
-        "macro_sha256": "[computed on export]"
+      analysis: {
+        preset: this.preset.name,
+        presetTitle: this.preset.title,
+        macroFile: 'analysis.ijm',
+        macroSha256: this.macroSha ?? null,
+        method: this.preset.method,
       },
-      "software": {
-        "imagej_version": "[from IJ.getFullVersion()]",
-        "cheerpj_version": "4.2",
-        "plugins": [
-          { "name": "SmartRoot", "version": "[detected]" }
-        ]
+      software: {
+        imagej: this.software?.imagej ?? null,
+        cheerpj: this.software?.cheerpj ?? null,
+        bench: 'CoSE FIJI Bench 1.0',
+        plugins: this.software?.plugins ?? [],
       },
-      "outputs": this.preset.outputs.map(o => o.name)
     }, null, 2);
   }
 
-  /**
-   * Generate RSML (RootSystemML) for roots preset.
-   * Simplified structure; full implementation would parse root topology.
-   * @param {Array<Object>} measurements – root measurements
-   * @returns {string} – XML
-   */
-  generateRSML(measurements) {
-    const now = new Date().toISOString();
+  // ---- RSML (roots only) -------------------------------------------------
+  // Emitted only when the macro produced root metrics. This carries measured
+  // properties, not a fabricated polyline: geometry comes from SmartRoot
+  // tracing, and claiming coordinates we never computed would corrupt the
+  // downstream RSML consumers (AstroRoot dashboard, RSML R/Python readers).
+  rsml() {
+    const r = (this.rows && this.rows[0]) || {};
+    const num = v => (v === undefined || v === null || v === '' ? null : Number(v));
     return `<?xml version="1.0" encoding="UTF-8"?>
-<rsml xmlns="http://rootsystemml.github.io/xml/rsml.xsd">
+<rsml xmlns:po="http://www.plantontology.org/xml-dtd/po.dtd">
   <metadata>
-    <version>1.0</version>
-    <unit>mm</unit>
-    <resolution>0.1</resolution>
-    <last-modified>${now}</last-modified>
-    <software>
-      <name>CoSE FIJI Bench</name>
-      <version>1.0</version>
-    </software>
+    <version>1</version>
+    <unit>${this.scale?.unit || 'pixel'}</unit>
+    <resolution>${this.scale?.pxPerMm ?? 1}</resolution>
+    <last-modified>${this.createdAt}</last-modified>
+    <software>CoSE FIJI Bench</software>
+    <image><label>${this.image?.filename || ''}</label><sha256>${this.image?.sha256 || ''}</sha256></image>
+    <property-definitions>
+      <property-definition><label>length</label><type>float</type><unit>${this.scale?.unit || 'pixel'}</unit></property-definition>
+      <property-definition><label>area</label><type>float</type></property-definition>
+    </property-definitions>
   </metadata>
-  <plant ID="plant-1">
-    <root ID="root-1">
-      <properties>
-        <property name="length" value="${this.getMeasurement('TotalLength') || 0}"/>
-        <property name="lateral-count" value="${this.getMeasurement('LateralCount') || 0}"/>
-      </properties>
-      <!-- Polylines (root paths) would be inserted here -->
-    </root>
-  </plant>
-</rsml>`;
+  <scene>
+    <plant ID="plant-1" label="${this.image?.filename || 'plant'}">
+      <root ID="rootsystem-1" label="whole root system" po:accession="PO:0025025">
+        <properties>
+          <length>${num(r.TotalLength)}</length>
+          <area>${num(r.RootSystemArea)}</area>
+          <maximum-depth>${num(r.MaxDepth)}</maximum-depth>
+          <lateral-spread>${num(r.LateralSpread)}</lateral-spread>
+          <convex-hull-area>${num(r.ConvexHullArea)}</convex-hull-area>
+          <root-length-density>${num(r.RootLengthDensity)}</root-length-density>
+        </properties>
+        <!-- No <geometry> element: this preset measures the skeleton in
+             aggregate and does not trace individual root polylines. Trace with
+             Plugins > SmartRoot > SR Explorer to produce full RSML geometry. -->
+      </root>
+    </plant>
+  </scene>
+</rsml>
+`;
   }
 
-  /**
-   * Helper: extract measurement value by name.
-   * @param {string} name – measurement name
-   * @returns {number|null}
-   */
-  getMeasurement(name) {
-    const result = this.results.measurements?.find(m => m.name === name);
-    return result?.value || null;
-  }
-
-  /**
-   * Generate RO-Crate metadata (FAIR packaging standard).
-   * @returns {string} – JSON
-   */
-  generateROCrate() {
-    const now = new Date().toISOString();
+  roCrate(fileNames) {
     return JSON.stringify({
-      "@context": "https://w3id.org/ro/crate/1.1/context",
-      "@graph": [
-        {
-          "@id": "ro-crate-metadata.json",
-          "@type": "CreativeWork",
-          "conformsTo": { "@id": "https://w3id.org/ro/crate/1.1" },
-          "about": { "@id": "./" }
-        },
-        {
-          "@id": "./",
-          "@type": "Dataset",
-          "name": `${this.preset.title} results`,
-          "description": this.preset.description,
-          "datePublished": now,
-          "hasPart": [
-            { "@id": "measurements.csv" },
-            { "@id": "dataset.json" },
-            { "@id": "provenance.json" }
-          ]
-        }
-      ]
+      '@context': 'https://w3id.org/ro/crate/1.1/context',
+      '@graph': [
+        { '@id': 'ro-crate-metadata.json', '@type': 'CreativeWork',
+          conformsTo: { '@id': 'https://w3id.org/ro/crate/1.1' }, about: { '@id': './' } },
+        { '@id': './', '@type': 'Dataset',
+          name: `${this.preset.title} — ${this.image?.filename || 'image'}`,
+          description: this.preset.description,
+          datePublished: this.createdAt,
+          license: { '@id': 'https://creativecommons.org/licenses/by/4.0/' },
+          identifier: this.bundleId,
+          hasPart: fileNames.map(f => ({ '@id': f })) },
+        { '@id': 'https://creativecommons.org/licenses/by/4.0/',
+          '@type': 'CreativeWork', name: 'CC BY 4.0' },
+      ],
     }, null, 2);
   }
 
-  /**
-   * Generate README with method details.
-   * @returns {string} – Markdown
-   */
-  generateREADME() {
+  readme() {
+    const s = this.scale || {};
+    const uncal = (s.source === 'none' || !s.pxPerMm);
     return `# ${this.preset.title}
+
+${this.preset.description}
 
 ## Method
 
 ${this.preset.method}
 
-## Outputs
+## Calibration
 
-${this.preset.outputs.map(o => `- **${o.name}** (${o.unit}): ${o.description}`).join('\n')}
+${uncal
+  ? '**This analysis is UNCALIBRATED.** No scale was supplied, so every length in\n`measurements.csv` is in **pixels** and every area in **pixels squared**. Do not\nreport these as physical units.'
+  : `Scale: **${s.pxPerMm} px/${s.unit}**, from \`${s.source}\`.\nLengths are in ${s.unit}, areas in ${s.unit}².`}
 
-## Files
+## Variables
 
-- \`measurements.csv\` — Results table (tidy format)
-- \`dataset.json\` — MIAPPE v1.2 metadata
-- \`provenance.json\` — Reproducibility trace (image, scale, software)
-- \`ro-crate-metadata.json\` — RO-Crate wrapper
-- \`README.md\` — This file
-- \`LICENSE\` — CC-BY-4.0
+| Column | Unit | Description |
+|---|---|---|
+${(this.preset.outputs || []).map(o => `| ${o.name} | ${o.unit} | ${o.description} |`).join('\n')}
 
-## Citation
+## Reproducing this
 
-Dataset created by CoSE FIJI Bench v1.0 using ImageJ.JS and ${this.preset.name} preset.
+1. Open <https://dr-richard-barker.github.io/cose-fiji/>
+2. Load the image recorded in \`provenance.json\` → \`image.url\`
+3. Set the scale to \`provenance.json\` → \`scale.pixelsPerMm\`
+4. Run \`analysis.ijm\` (Plugins ▸ Macros ▸ Run…)
 
-## Reproducibility
+\`provenance.json\` carries SHA-256 for both the source image and the macro, so
+you can confirm you are re-running the same analysis on the same bytes.
 
-To reproduce: Load the image URL and scale from \`provenance.json\` into the FIJI bench with the \`${this.preset.name}\` preset.
+## Licence
+
+Data: CC-BY-4.0 (see LICENSE). Produced with ImageJ (public domain) via
+ImageJ.JS/CheerpJ; SmartRoot is GPL-3.0.
 `;
   }
 
-  /**
-   * Generate LICENSE (CC-BY-4.0).
-   * @returns {string}
-   */
-  generateLicense() {
-    return `Creative Commons Attribution 4.0 International
+  license() {
+    return `Creative Commons Attribution 4.0 International (CC BY 4.0)
 
-This work is licensed under the Creative Commons Attribution 4.0 International License.
-To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/
+You are free to share and adapt this material for any purpose, even
+commercially, provided you give appropriate credit, link to the licence, and
+indicate if changes were made.
 
-You are free to:
-- Share — copy and redistribute the material
-- Adapt — remix, transform, and build upon the material
-
-Under the following terms:
-- Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made.
+Full text: https://creativecommons.org/licenses/by/4.0/legalcode
 `;
   }
 
-  /**
-   * Create .zip archive from this.files.
-   * Requires JSZip library (loaded from CDN).
-   * @returns {Promise<Blob>} – the .zip file
-   */
-  async createZip() {
-    // Check if JSZip is available
-    if (typeof JSZip === 'undefined') {
-      throw new Error('JSZip library not available. Load from CDN or import.');
-    }
+  /** Assemble every file and return the .zip blob. */
+  async build() {
+    this.macroSha = this.macro ? await sha256Hex(this.macro) : null;
 
-    const zip = new JSZip();
+    const files = {
+      'measurements.csv': this.csv(),
+      'dataset.json': this.miappe(),
+      'provenance.json': this.provenance(),
+      'README.md': this.readme(),
+      'LICENSE': this.license(),
+    };
+    if (this.macro) files['analysis.ijm'] = this.macro;
+    if (this.log) files['imagej-log.txt'] = this.log;
+    if (this.preset.name === 'roots') files['roots.rsml'] = this.rsml();
 
-    // Add all files
-    for (const [filename, content] of Object.entries(this.files)) {
-      zip.file(filename, content);
-    }
-
-    // Generate .zip blob
-    return await zip.generateAsync({ type: 'blob' });
+    files['ro-crate-metadata.json'] = this.roCrate(Object.keys(files));
+    return makeZip(files);
   }
 
-  /**
-   * Trigger browser download of the .zip.
-   * @param {string} filename – default: "{preset}-{timestamp}.zip"
-   */
-  async download(filename) {
-    const blob = await this.export();
+  /** Build and hand the .zip to the browser as a download. */
+  async download() {
+    const blob = await this.build();
+    const stem = (this.image?.filename || 'analysis').replace(/\.[^.]+$/, '');
+    const name = `${stem}__${this.preset.name}__${this.createdAt.slice(0, 10)}.zip`;
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename || `${this.preset.name}-${new Date().toISOString().split('T')[0]}.zip`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    return name;
   }
 }

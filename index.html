@@ -940,9 +940,10 @@ try {
      Cache-busting query so post-deploy iterations refresh cleanly. -->
 <script src="cellpose-integration.js?v=3"></script>
 
-<!-- CoSE FIJI Bench: URL parameter handler + image pipeline + preset launcher.
-     Waits for ImageJ boot, then parses ?open=&scale=&preset= to orchestrate analysis. -->
-<script src="bench/bench.js?v=1"></script>
+<!-- CoSE FIJI Bench: URL parameter handler + image pipeline + preset launcher +
+     FAIR export. Waits for ImageJ boot, then parses ?open=&scale=&preset=.
+     ES module: it imports ./fair.js and ./zip.js. -->
+<script type="module" src="bench/bench.js?v=2"></script>
 
 <div id="container"></div>
 </body>

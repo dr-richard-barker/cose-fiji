@@ -1,46 +1,60 @@
-// CoSE FIJI Bench: Rosettes Preset
-// Individual plant rosette morphology: area, shape, compactness
+// CoSE FIJI Bench — rosettes preset
+//
+// Per-rosette morphometrics from an overhead image.
+// Segmentation uses the a* channel of CIE L*a*b* ("Lab Stack" in this build).
+// Green foliage sits at negative a*, which separates it from soil, perlite and
+// most tray plastics far more reliably than a plain RGB threshold, and is stable
+// under the colour casts that LED growth lighting introduces.
+//
+// One Results row per rosette.
 
-getDimensions(w, h, channels, slices, frames);
-if (channels > 1) { run("Stack to RGB"); run("RGB Stack"); }
-if (bitDepth() != 8) { run("8-bit"); }
+setBatchMode(true);
+setOption("BlackBackground", true);
 
-// Convert to CIELAB; threshold on a* (green channel)
-print("Converting to CIELAB...");
-run("CIELAB Stack");
-selectWindow("a*");
+getPixelSize(unit, pw, ph);
+calibrated = (unit != "pixel" && unit != "pixels" && pw != 1);
+orig = getTitle();
 
-// Threshold to isolate green (positive a*)
-setThreshold(5, 255);
+// --- 1. a* channel --------------------------------------------------------
+run("Duplicate...", "title=__ros");
+selectWindow("__ros");
+if (bitDepth() != 24) run("RGB Color");
+run("Lab Stack");            // 32-bit stack: 1=L*, 2=a*, 3=b*
+setSlice(2);
+run("Duplicate...", "title=__astar");
+selectWindow("__astar");
+
+// --- 2. threshold ---------------------------------------------------------
+// Foliage = a* below the Otsu split (negative a* is green).
+setAutoThreshold("Otsu");
 run("Convert to Mask");
-
-// Size gate: remove noise
-print("Removing noise...");
 run("Despeckle");
-run("Open");
+run("Fill Holes");
+run("Watershed");            // split rosettes that touch at the leaf margins
 
-// Watershed to separate touching rosettes
-print("Segmenting rosettes...");
-run("Watershed");
+// --- 3. measure -----------------------------------------------------------
+// minSize is in calibrated units when a scale is set, so gate in the same space.
+if (calibrated) minSize = 20; else minSize = 2000;   // mm^2 vs px^2
 
-// Analyze each rosette
-print("Measuring rosettes...");
-run("Analyze Particles...", "size=50-Infinity circularity=0.4-1.0 show=Outlines display clear include summarize");
+run("Set Measurements...", "area perimeter shape feret's redirect=None decimal=3");
+run("Analyze Particles...", "size=" + minSize + "-Infinity exclude clear");
 
-// Results table now contains:
-//   - Area, Perimeter, Circularity, Solidity, etc.
-// Reformat into our standard schema
+n = nResults;
 
-nResults = nResults;
-for (i = 0; i < nResults; i++) {
-  area = getResult("Area", i);
-  perim = getResult("Perim.", i);
-  circ = getResult("Circ.", i);
-  compact = 1 - circ;
-
-  setResult("Circularity", i, circ);
-  setResult("Compactness", i, compact);
+// Compactness = area / convex-ish area, approximated as area / (pi/4 * Feret^2).
+// 1.0 = a tight disc, lower = a spread, deeply lobed rosette.
+for (i = 0; i < n; i++) {
+  a = getResult("Area", i);
+  f = getResult("Feret", i);
+  if (f > 0) c = a / (0.7853981634 * f * f); else c = 0;
+  setResult("Compactness", i, c);
+  setResult("Unit", i, unit);
 }
-
 updateResults();
-print("✓ Rosette analysis complete: " + nResults + " rosettes detected");
+
+close("__astar");
+close("__ros");
+selectWindow(orig);
+setBatchMode(false);
+
+print("[rosettes] n=" + n + "  unit=" + unit + "  calibrated=" + calibrated);

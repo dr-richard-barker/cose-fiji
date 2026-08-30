@@ -1,82 +1,62 @@
 {
   "name": "roots",
   "title": "Root System Analysis",
-  "subtitle": "Semi-automatic root tracing with SmartRoot",
-  "description": "Quantifies root system architecture: total length, lateral branch density, depth, lateral spread. Detects roots via ridge enhancement → Otsu threshold → skeletonization. Outputs RSML (topology + geometry), CSV measurements, and ROI.",
-  "method": "Ridge-enhanced Otsu threshold + skeletonize. For detailed tracing, uses SmartRoot SR_Explorer interactive canvas. Fallback: automatic paths from skeleton.",
-  "dataType": "root images (bright root on dark background, RGB or grayscale)",
-  "outputFormat": "RSML + CSV",
+  "subtitle": "Calibrated root-system metrics, with SmartRoot for full tracing",
+  "description": "Whole-root-system metrics from a calibrated image: total length, projected area, depth, lateral spread, convex hull and root length density. One summary row per image.",
+  "method": "Rolling-ball background subtraction (radius 50 px) to flatten plate illumination, Otsu threshold, despeckle+open, then a core-ImageJ binary skeleton. Total length = skeleton pixel count x pixel width. This build has no Fiji Ridge Detection or AnalyzeSkeleton, so per-lateral topology is not computed here; trace with Plugins > SmartRoot > SR Explorer for that.",
+  "dataType": "root systems on plates or rhizotrons, dark roots on a pale background",
+  "granularity": "one row per image",
   "outputs": [
     {
       "name": "TotalLength",
       "label": "Total root length",
       "unit": "mm",
-      "description": "Sum of all skeleton path lengths",
-      "ontologyTerm": "PO:0015017"
+      "description": "Skeleton length summed over the whole root system. Approximate: under-reads diagonal runs by up to ~8%.",
+      "ontologyTerm": "TO:0000227"
     },
     {
-      "name": "LateralCount",
-      "label": "Lateral root count",
-      "unit": "count",
-      "description": "Number of second-order and higher branches",
-      "ontologyTerm": "PO:0015018"
+      "name": "RootSystemArea",
+      "label": "Projected root area",
+      "unit": "mm^2",
+      "description": "Thresholded area of the root system",
+      "ontologyTerm": null
     },
     {
       "name": "MaxDepth",
-      "label": "Maximum root depth",
+      "label": "Maximum depth",
       "unit": "mm",
-      "description": "Distance from root crown to deepest point",
+      "description": "Bounding-box height of the root system",
       "ontologyTerm": null
     },
     {
       "name": "LateralSpread",
-      "label": "Lateral spread (width)",
+      "label": "Lateral spread",
       "unit": "mm",
-      "description": "Bounding box width perpendicular to depth axis",
+      "description": "Bounding-box width of the root system",
       "ontologyTerm": null
     },
     {
       "name": "ConvexHullArea",
       "label": "Convex hull area",
-      "unit": "mm²",
-      "description": "Area of convex hull around root system",
+      "unit": "mm^2",
+      "description": "Area of the convex hull enclosing the root system",
       "ontologyTerm": null
     },
     {
-      "name": "DensityPerMm",
+      "name": "RootLengthDensity",
       "label": "Root length density",
-      "unit": "mm/mm²",
-      "description": "Total root length per unit convex hull area",
+      "unit": "mm/mm^2",
+      "description": "Total length divided by convex hull area",
       "ontologyTerm": null
     }
   ],
-  "parameters": [
-    {
-      "name": "ridgeRadius",
-      "type": "number",
-      "label": "Ridge detection radius",
-      "default": 3,
-      "min": 1,
-      "max": 10,
-      "description": "Sigma for ridge/vessel filter. Larger = thicker roots."
-    },
-    {
-      "name": "skeletonMinLength",
-      "type": "number",
-      "label": "Skeleton minimum branch length",
-      "default": 5,
-      "unit": "px",
-      "description": "Prune skeleton branches shorter than this. Eliminates noise."
-    },
-    {
-      "name": "useSmartRoot",
-      "type": "boolean",
-      "label": "Use SmartRoot interactive tracing",
-      "default": false,
-      "description": "If true, launches SR_Explorer for manual/semi-automatic tracing. Otherwise runs fully automatic detection."
-    }
+  "notes": [
+    "Lateral root number (TO:0001013) requires SmartRoot tracing and is not produced by this macro."
   ],
-  "publications": [
-    "Lobet et al. (2011). Root System Markup Language (RSML): A Unified Root Architecture Data Format. Plant Physiology."
-  ]
+  "presetVersion": "1.0",
+  "commonColumns": {
+    "Label": "Source image title",
+    "Unit": "Spatial unit of every length/area column",
+    "Calibrated": "1 if a scale was applied; 0 means all values are in pixels"
+  }
 }

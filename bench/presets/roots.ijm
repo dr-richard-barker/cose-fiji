@@ -1,68 +1,96 @@
-// CoSE FIJI Bench: Roots Preset
-// Semi-automatic root system analysis via ridge enhancement + Otsu threshold + skeletonization
+// CoSE FIJI Bench — roots preset
 //
-// Input: open image with root system
-// Output: Results table with per-root measurements, ROI overlay
+// Automatic root-system metrics from a calibrated image.
+//
+// Command set note: this build is ImageJ 1.54 + MorphoLibJ + Bio-Formats. It does
+// NOT ship Fiji's Ridge Detection or AnalyzeSkeleton, so illumination is flattened
+// with a rolling-ball background subtraction and length is estimated from a
+// core-ImageJ binary skeleton. Interactive topology (per-lateral tracing, RSML)
+// comes from Plugins > SmartRoot > SR Explorer, not from this macro.
+//
+// Assumes: Set Scale has already been applied by bench.js (?scale=). If it has
+// not, every length is reported in pixels and scale_source is "none".
 
-getDimensions(w, h, channels, slices, frames);
-if (channels > 1) { run("Stack to RGB"); run("RGB Stack"); run("Grayscale"); }
-if (bitDepth() != 8) { run("8-bit"); }
+setBatchMode(true);
+setOption("BlackBackground", true);
+run("Colors...", "foreground=white background=black selection=yellow");
 
-// Ridge/vessel enhancement to highlight thin root structures
-print("Detecting root vessels...");
-run("Ridge Detection", "line_width=2 high_contrast=500 lower_threshold=10 upper_threshold=255 extend_line show_results displayresults add_to_manager");
+// --- 0. calibration ------------------------------------------------------
+getPixelSize(unit, pw, ph);
+calibrated = (unit != "pixel" && unit != "pixels" && pw != 1);
 
-// Threshold to binary (Otsu is robust to lighting variations)
-print("Thresholding...");
-setAutoThreshold("Otsu dark");
+// --- 1. normalise to 8-bit grayscale ------------------------------------
+if (bitDepth() == 24) run("8-bit");
+if (bitDepth() != 8) run("8-bit");
+
+// Work on a duplicate so the user's original stays untouched on screen.
+orig = getTitle();
+run("Duplicate...", "title=__roots_work");
+selectWindow("__roots_work");
+
+// --- 2. flatten illumination --------------------------------------------
+// Rolling-ball radius ~ 4x expected root width. 50 px is a reasonable default
+// for scanned plates; exposed as ridgeRadius in roots.json.
+run("Subtract Background...", "rolling=50 light");
+
+// --- 3. threshold --------------------------------------------------------
+// Roots are dark on a light plate, hence "Otsu" (not "Otsu dark").
+setAutoThreshold("Otsu");
 run("Convert to Mask");
 
-// Skeletonize to 1-px-wide paths
-print("Skeletonizing...");
-run("Skeletonize (2D/3D)");
+// Remove speckle noise before skeletonising.
+run("Despeckle");
+run("Open");
 
-// Analyze skeleton: branch points, path lengths, etc.
-print("Analyzing skeleton topology...");
-run("Analyze Skeleton (2D/3D)", "prune=none show display");
+// --- 4. root system area + bounding geometry ----------------------------
+run("Create Selection");
+if (selectionType() == -1) {
+  // Nothing segmented — bail out with zeros rather than throwing.
+  rootArea = 0; depth = 0; width = 0; hullArea = 0;
+} else {
+  getStatistics(rootArea);
+  getSelectionBounds(bx, by, bw, bh);
+  depth = bh * ph;
+  width = bw * pw;
 
-// The "Analyze Skeleton" plugin creates a Results table with:
-//   - Skeleton ID
-//   - Branch length
-//   - Branch information
-// We'll reformat this into our standard outputs
-
-selectWindow("Results");
-nResults = nResults;
-if (nResults == 0) {
-  print("WARNING: No skeleton branches detected. Image may have poor root visibility.");
+  // Convex hull area: hull of the whole root system.
+  run("Convex Hull");
+  getStatistics(hullArea);
+  run("Select None");
 }
 
-// Compute aggregate statistics
-totalLength = 0;
-for (i = 0; i < nResults; i++) {
-  val = getResult("Branch length", i);
-  if (!isNaN(val)) totalLength += val;
-}
-
-// Get image bounds for convex hull estimate (approximation)
-run("Select All");
-getSelectionBounds(x, y, boxW, boxH);
+// --- 5. skeleton length --------------------------------------------------
 run("Select None");
-convexArea = (boxW * boxH); // rough estimate
+run("Skeletonize");
 
-// Compute lateral count (proxy: number of branch points)
-// TODO: parse 3D skeleton report for accurate topology
-lateralCount = nResults - 1; // approximate: each row is a branch
+// Total length is estimated as (skeleton pixel count x pixel width). This is the
+// standard first-order estimate; it under-reads diagonal runs by up to ~8%, so it
+// is reported as an approximation. SmartRoot tracing gives exact polyline lengths.
+getHistogram(hvals, hcounts, 256);
+skelPx = hcounts[255];
+totalLength = skelPx * pw;
 
-// Clear previous results and write our standardized output
+// --- 6. density ----------------------------------------------------------
+if (hullArea > 0) density = totalLength / hullArea; else density = 0;
+
+// --- 7. write results ----------------------------------------------------
+close("__roots_work");
+selectWindow(orig);
+setBatchMode(false);
+
 run("Clear Results");
-setResult("TotalLength", 0, totalLength);
-setResult("LateralCount", 0, lateralCount);
-setResult("MaxDepth", 0, h); // y-extent of image
-setResult("LateralSpread", 0, w);
-setResult("ConvexHullArea", 0, convexArea);
-if (convexArea > 0) setResult("DensityPerMm", 0, totalLength / convexArea);
-
+setResult("Label",             0, orig);
+setResult("TotalLength",       0, totalLength);
+setResult("RootSystemArea",    0, rootArea);
+setResult("MaxDepth",          0, depth);
+setResult("LateralSpread",     0, width);
+setResult("ConvexHullArea",    0, hullArea);
+setResult("RootLengthDensity", 0, density);
+setResult("Unit",              0, unit);
+setResult("Calibrated",        0, calibrated);
 updateResults();
 
-print("✓ Root analysis complete: " + totalLength + " mm total length, " + lateralCount + " laterals");
+print("[roots] length=" + d2s(totalLength, 2) + " " + unit
+    + "  area=" + d2s(rootArea, 2) + " " + unit + "^2"
+    + "  hull=" + d2s(hullArea, 2)
+    + "  calibrated=" + calibrated);

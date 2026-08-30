@@ -1,18 +1,48 @@
 {
   "name": "microgreen-canopy",
   "title": "Microgreen Canopy",
-  "subtitle": "Canopy coverage, greenness, texture uniformity",
-  "description": "Quantifies dense microgreen canopies: coverage %, greenness index (ExG), texture variance for harvest readiness.",
-  "method": "HSV hue+saturation → canopy mask → ExG for greenness. No per-plant segmentation (too dense).",
-  "dataType": "overhead microgreen tray images (dense leafy crop, uniform lighting)",
-  "outputFormat": "CSV (single-row summary) + mask overlay",
+  "subtitle": "Whole-tray cover, greenness and evenness",
+  "description": "Tray-level metrics for stands too dense to segment into individuals: canopy cover, greenness, spatial evenness and a combined readiness score. One summary row per image.",
+  "method": "HSB conversion; canopy = hue 50-110 AND saturation >= 40, so unsaturated tray edges are excluded. Greenness is mean hue distance from green measured on an unmodified copy of the hue channel. Uniformity is 1 - CV of per-cell coverage on an 8x6 grid, so it measures how evenly the canopy fills the tray rather than how similar the green pixels are to each other.",
+  "dataType": "overhead microgreen tray images under even lighting",
+  "granularity": "one row per image",
   "outputs": [
-    {"name": "CanopyCover", "label": "Canopy coverage", "unit": "%", "description": "Fraction of tray covered by green foliage", "ontologyTerm": null},
-    {"name": "GreenessIndex", "label": "Greenness index", "unit": "normalized", "description": "ExG; 0=none, 1=pure green", "ontologyTerm": null},
-    {"name": "TextureVariance", "label": "Texture variance", "unit": "variance", "description": "Uniformity of canopy. Lower = more uniform.", "ontologyTerm": null},
-    {"name": "ReadinessScore", "label": "Harvest readiness", "unit": "score", "description": "0–1 score based on coverage + uniformity", "ontologyTerm": null}
+    {
+      "name": "CanopyCover",
+      "label": "Canopy cover",
+      "unit": "%",
+      "description": "Percentage of tray area covered by foliage",
+      "ontologyTerm": null
+    },
+    {
+      "name": "GreennessIndex",
+      "label": "Greenness",
+      "unit": "0-1",
+      "description": "1.0 is pure green; falls off as hue moves toward yellow",
+      "ontologyTerm": null
+    },
+    {
+      "name": "Uniformity",
+      "label": "Spatial evenness",
+      "unit": "0-1",
+      "description": "1 - CV of coverage across an 8x6 grid. 1.0 is perfectly even; a stand dense at one end scores low.",
+      "ontologyTerm": null
+    },
+    {
+      "name": "ReadinessScore",
+      "label": "Harvest readiness",
+      "unit": "0-1",
+      "description": "Cover fraction weighted by evenness",
+      "ontologyTerm": null
+    }
   ],
-  "parameters": [
-    {"name": "minCover", "type": "number", "label": "Minimum coverage %", "default": 70, "description": "If below this, harvest not recommended."}
-  ]
+  "notes": [
+    "ReadinessScore is a composite convenience metric, not a validated agronomic index. Report CanopyCover and Uniformity alongside it."
+  ],
+  "presetVersion": "1.0",
+  "commonColumns": {
+    "Label": "Source image title",
+    "Unit": "Spatial unit of every length/area column",
+    "Calibrated": "1 if a scale was applied; 0 means all values are in pixels"
+  }
 }
