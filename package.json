@@ -1,9 +1,9 @@
 {
-  "name": "imagej.js2",
+  "name": "cose-fiji",
   "version": "1.0.0",
-  "description": "ImageJ.JS - Run ImageJ in the browser using CheerpJ",
+  "description": "CoSE FIJI Bench - ImageJ 1.54 in the browser, tuned for plant phenotyping, with FAIR export.",
   "scripts": {
-    "dev": "http-server -p 8000 --cors -c-1",
+    "dev": "http-server -p ${PORT:-8010} --cors -c-1",
     "start": "npm run dev"
   },
   "devDependencies": {
