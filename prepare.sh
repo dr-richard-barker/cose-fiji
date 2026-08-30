@@ -85,6 +85,26 @@ if [ -f plugins_manifest.txt ]; then
     done < plugins_manifest.txt
 fi
 
+# --- CoSE addition: SmartRoot -------------------------------------------
+# SmartRoot (Lobet / Draye, GPL-3.0) ships only as a zip, so it cannot go in
+# plugins_manifest.txt. Fetch and unpack the jars into their own plugins
+# subdirectory, which is what puts "SR Explorer" under Plugins > SmartRoot.
+# mysql-connector is included only so the SQL menu classes resolve; the browser
+# has no raw TCP, so that export path cannot work and RSML is used instead.
+echo "Fetching SmartRoot..."
+SR_URL="https://raw.githubusercontent.com/SmartRoot/SmartRoot-Installation/master/SmartRoot.zip"
+SR_TMP="$(mktemp -d)"
+if curl -fsSL "$SR_URL" -o "$SR_TMP/SmartRoot.zip"; then
+  unzip -qo "$SR_TMP/SmartRoot.zip" -x "__MACOSX/*" -d "$SR_TMP"
+  mkdir -p lib/ImageJ/plugins/SmartRoot
+  cp "$SR_TMP"/SmartRoot/SmartRoot/*.jar lib/ImageJ/plugins/SmartRoot/
+  echo "  SmartRoot jars: $(ls lib/ImageJ/plugins/SmartRoot | tr '\n' ' ')"
+else
+  echo "  WARNING: could not fetch SmartRoot; the roots preset still works but" >&2
+  echo "  interactive tracing will be unavailable." >&2
+fi
+rm -rf "$SR_TMP"
+
 # Create index.list files for subdirectories
 echo "Creating index.list files..."
 dirs=("lib/ImageJ/plugins" "lib/ImageJ/luts" "lib/ImageJ/macros")

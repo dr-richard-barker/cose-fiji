@@ -1,7 +1,7 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Build Site
+name: Build and deploy CoSE FIJI Bench
 
 on:
   push:
@@ -36,8 +36,9 @@ jobs:
         cp hypha-imagej-service.js dist/
         cp utils.js dist/
         cp file-browser.js dist/
-        cp CNAME dist/
         cp -r lib dist/
+        # CoSE additions: preset macros, descriptors, FAIR export
+        cp -r bench dist/
         # threadhack drop-in runtime — loader.js is referenced from index.html
         mkdir -p dist/threadhack
         cp -r threadhack/runtime dist/threadhack/

@@ -2,15 +2,8 @@
 <html lang="en">
 <head>
 <title>ImageJ.JS</title>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WH7GT4NC11"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-WH7GT4NC11');
-</script>
+<!-- Upstream Google Analytics removed: this deployment must not report
+     visitors to a third party's analytics property. -->
 <!-- threadhack drop-in CheerpJ loader: auto worker pool + bytecode rewriter -->
 <script src="threadhack/runtime/loader.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -936,9 +929,8 @@ try {
 <!-- Touch / pinch controller for LazyImagePlus (mobile + trackpad). -->
 <script src="threadhack/viv-loader/touch-controller.js"></script>
 
-<!-- Cellpose integration: adds Extensions → Cellpose… (uses cellpose-web/).
-     Cache-busting query so post-deploy iterations refresh cleanly. -->
-<script src="cellpose-integration.js?v=3"></script>
+<!-- Cellpose integration removed: cellpose-integration.js is not present in
+     this repository and 404s on load. -->
 
 <!-- CoSE FIJI Bench: URL parameter handler + image pipeline + preset launcher +
      FAIR export. Waits for ImageJ boot, then parses ?open=&scale=&preset=.
