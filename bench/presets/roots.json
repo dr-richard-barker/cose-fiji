@@ -3,7 +3,7 @@
   "title": "Root System Analysis",
   "subtitle": "Calibrated root-system metrics, with SmartRoot for full tracing",
   "description": "Whole-root-system metrics from a calibrated image: total length, projected area, depth, lateral spread, convex hull and root length density. One summary row per image.",
-  "method": "Rolling-ball background subtraction (radius 50 px) to flatten plate illumination, Otsu threshold, despeckle+open, then a core-ImageJ binary skeleton. Total length = skeleton pixel count x pixel width. This build has no Fiji Ridge Detection or AnalyzeSkeleton, so per-lateral topology is not computed here; trace with Plugins > SmartRoot > SR Explorer for that.",
+  "method": "Rolling-ball background subtraction (radius 50 px) to flatten plate illumination, Otsu threshold, despeckle+open, then a core-ImageJ binary skeleton. Total length = skeleton pixel count x pixel width. This build has no Fiji Ridge Detection or AnalyzeSkeleton, so per-lateral topology is not computed here; trace with Plugins > SmartRoot > Trace current image for that.",
   "dataType": "root systems on plates or rhizotrons, dark roots on a pale background",
   "granularity": "one row per image",
   "outputs": [
@@ -51,7 +51,7 @@
     }
   ],
   "notes": [
-    "Lateral root number (TO:0001013) requires SmartRoot tracing and is not produced by this macro."
+    "Lateral root number (TO:0001013) requires SmartRoot tracing (Plugins > SmartRoot > Trace current image) and is not produced by this macro."
   ],
   "presetVersion": "1.0",
   "commonColumns": {
