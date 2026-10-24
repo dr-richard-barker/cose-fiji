@@ -1,3 +1,8 @@
+> **Inherited from upstream ImageJ.JS, not verified by CoSE.** Written by the upstream
+> [ImageJ.JS](https://github.com/aicell-lab/imagej.js) authors and kept in this fork as received. CoSE has not checked its claims,
+> figures, citations or file references; see the [CoSE FIJI Bench README](../../README.md) for what CoSE
+> has verified.
+
 # threadhack runtime — drop-in CheerpJ 4.2 replacement
 
 Replaces `https://cjrtnc.leaningtech.com/4.2/loader.js` with a loader that:

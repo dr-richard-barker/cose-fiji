@@ -11,7 +11,7 @@
       "name": "TotalLength",
       "label": "Total root length",
       "unit": "mm",
-      "description": "Skeleton length summed over the whole root system. Approximate: under-reads diagonal runs by up to ~8%.",
+      "description": "Skeleton length summed over the whole root system. Approximate: under-reads diagonal runs, by about 29% at 45° and about 10% averaged over random orientations.",
       "ontologyTerm": "TO:0000227"
     },
     {

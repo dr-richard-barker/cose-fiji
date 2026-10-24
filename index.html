@@ -321,6 +321,7 @@
         padding: 1rem !important;
       }
     }
+  </style>
   <link rel="stylesheet" href="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/cose-theme.css">
   <link rel="stylesheet" href="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/cose-chrome.css">
   <link rel="stylesheet" href="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/cose-map.css">
@@ -912,8 +913,8 @@ try {
         // carries only the features that don't belong under stock File.
         await MenuRegistry.addMenu(
             "Extensions",
-            ["Connect to Hypha MCP...", "-", "Test ROI ↔ GeoJSON", "-", "Cellpose…"],
-            ["mcp",                     "-", "roi-test",          "-", "cellpose"]
+            ["Connect to Hypha MCP...", "-", "Test ROI ↔ GeoJSON"],
+            ["mcp",                     "-", "roi-test"]
         );
         console.log('Installed "Extensions" menu');
     } catch (e) {
@@ -942,6 +943,5 @@ try {
 <div id="container"></div>
 <script src="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/sites.js"></script>
 <script src="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/theme.js"></script>
-<script src="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/nav.js"></script>
 </body>
 </html>
