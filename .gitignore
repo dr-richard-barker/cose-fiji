@@ -25,3 +25,6 @@ lib/ImageJ
 # ImageJ build directory
 ImageJ-build/
 vendor/
+
+# ABAI attestation (local)
+.abai/
