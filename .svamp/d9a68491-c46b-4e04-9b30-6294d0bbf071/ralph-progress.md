@@ -1,3 +1,8 @@
+> **Inherited from upstream ImageJ.JS, not verified by CoSE.** Written by the upstream
+> [ImageJ.JS](https://github.com/aicell-lab/imagej.js) authors and kept in this fork as received. CoSE has not checked its claims,
+> figures, citations or file references; see the [CoSE FIJI Bench README](../../README.md) for what CoSE
+> has verified. Corrected here: a personal email address removed.
+
 # Ralph Loop Progress — ImageJ.JS Nature Methods pitch
 
 ## Patterns
@@ -5272,7 +5277,7 @@
 
 - **Third application of the iter-28 engineering-infrastructure iteration kind + second application of the iter-32 bibliographic-resolution iteration kind.** Iter 36 is the first iteration to combine two iteration kinds in one pass — the tool-landing half (iter-28 kind) and the applied-resolution half (iter-32 kind). Both rule-sets apply independently and do not conflict: the tool-landing half is zero-prose-edit and zero-placeholder-change, while the applied-resolution half is by-design claim-preserving but allowed to drop the placeholder count by the number of resolved references. The combined iteration is a pattern future iterations may want to follow when a new engineering-infrastructure tool's first-application discovers genuine resolutions — bundling them together makes the tool's value visible at its landing, rather than merely theoretical.
 
-- **Crossref network availability from the sandbox is stable enough for quarterly re-check runs.** Iter 36 ran 7 Crossref queries in the `--online` mode in under 10 seconds total with zero errors, using the polite-pool User-Agent (`imagej-js-manuscript/0.1 (mailto:wei.ouyang@scilifelab.se)`). A future iteration can reasonably expect `recheck_references.py --online` to complete without network surprises. The tool's per-entry error-catching ensures that a partial network outage (e.g., one DNS failure mid-run) produces a partial report rather than losing all progress — so even in degraded network conditions the tool is useful.
+- **Crossref network availability from the sandbox is stable enough for quarterly re-check runs.** Iter 36 ran 7 Crossref queries in the `--online` mode in under 10 seconds total with zero errors, using the polite-pool User-Agent (`imagej-js-manuscript/0.1 (mailto:[address removed])`). A future iteration can reasonably expect `recheck_references.py --online` to complete without network surprises. The tool's per-entry error-catching ensures that a partial network outage (e.g., one DNS failure mid-run) produces a partial report rather than losing all progress — so even in degraded network conditions the tool is useful.
 
 - **Highest-value next iteration without new evidence: per-gate timeline row in the readiness dashboard.** The #2 recommendation since iter 35. A fourth dashboard-expansion iteration (tenth iteration kind, iter-34 origin) that adds a per-gate timeline row tracking Gate-D/E/F/G/H landing progress over time (e.g., "Gate H: 0 → 8 → 10 / 15 references Crossref-verified across iters 32 and 36"). Complementary to the iter-34 per-§ biologist-voice row and per-figure coverage row. Follows the same three dashboard-expansion rules (zero prose edits, rephrasing only, closes visibility gap).
 

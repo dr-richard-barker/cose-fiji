@@ -1,3 +1,8 @@
+> **Inherited from upstream ImageJ.JS, not verified by CoSE.** Written by the upstream
+> [ImageJ.JS](https://github.com/aicell-lab/imagej.js) authors and kept in this fork as received. CoSE has not checked its claims,
+> figures, citations or file references; see the [CoSE FIJI Bench README](README.md) for what CoSE
+> has verified.
+
 # Native File System Integration for ImageJ.JS ✅ WORKING
 
 This implementation successfully adds native file system support to ImageJ.JS using the File System Access API, allowing users to mount local directories and work with files directly from their computer.

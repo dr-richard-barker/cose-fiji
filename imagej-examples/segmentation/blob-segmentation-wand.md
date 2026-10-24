@@ -8,6 +8,12 @@ works_in_cheerpj: true
 date_added: 2024-12-02
 ---
 
+> **Inherited from upstream ImageJ.JS, not verified by CoSE.** Written by the upstream
+> [ImageJ.JS](https://github.com/aicell-lab/imagej.js) authors and kept in this fork as received. CoSE has not checked its claims,
+> figures, citations or file references; see the [CoSE FIJI Bench README](../../README.md) for what CoSE
+> has verified.
+
+
 # Blob Segmentation Using Magic Wand
 
 ## Description

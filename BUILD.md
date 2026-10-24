@@ -1,3 +1,8 @@
+> **Inherited from upstream ImageJ.JS, not verified by CoSE.** Written by the upstream
+> [ImageJ.JS](https://github.com/aicell-lab/imagej.js) authors and kept in this fork as received. CoSE has not checked its claims,
+> figures, citations or file references; see the [CoSE FIJI Bench README](README.md) for what CoSE
+> has verified.
+
 # Building ImageJ.js with Patches
 
 This project builds ImageJ from source with custom patches applied.

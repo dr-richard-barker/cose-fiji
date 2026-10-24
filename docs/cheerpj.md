@@ -1,3 +1,8 @@
+> **Inherited from upstream ImageJ.JS, not verified by CoSE.** A snapshot of Leaning Technologies'
+> CheerpJ documentation, added by the upstream [ImageJ.JS](https://github.com/aicell-lab/imagej.js) authors. It may be out of date: its
+> licensing text differs from the [current licensing page](https://cheerpj.com/docs/licensing)
+> (24 Oct 2026). See the [CoSE FIJI Bench README](../README.md) for what CoSE has verified.
+
 Directory Structure:
 
 └── ./
