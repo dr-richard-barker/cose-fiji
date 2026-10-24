@@ -67,8 +67,8 @@ class FIJIBench {
    * mode is therefore unusable for real analysis — it fails quietly, which is
    * worse than failing loudly.
    *
-   * The cost is that a macro *error* opens a modal dialog and wedges this
-   * single-threaded JVM. Hence the watchdog: we surface an actionable message
+   * The cost is that a macro *error* opens a modal dialog that blocks
+   * CheerpJ's main JVM. Hence the watchdog: we surface an actionable message
    * rather than hanging forever.
    */
   async macro(src, { timeoutMs = 120000 } = {}) {

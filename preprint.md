@@ -384,7 +384,7 @@ The final implication is that regime measurement itself is a methodology contrib
 - **Kirillov et al. 2023.** Kirillov A, Mintun E, Ravi N, et al. *Segment Anything.* ICCV 2023 [DOI/arXiv:2304.02643]. Cited in §1, §8 (SAM benchmark entry).
 - **Stringer & Pachitariu 2025.** Stringer C, Pachitariu M. *Cellpose3: generalizable and improved cellular segmentation.* Nature Methods [VOL:PAGES, DOI]. Cited in §1, §8 (Cellpose-generalist benchmark entry). Verify that "2025" refers to the version of record cited in the benchmark; if the cited code version is a 2024 Cellpose 2/2.x release, update the year here and in the prose together.
 - **Schmidt et al. 2018.** Schmidt U, Weigert M, Broaddus C, Myers G. *Cell Detection with Star-convex Polygons.* MICCAI 2018 [DOI/arXiv:1806.03535]. Cited in §1, §8 (StarDist-versatile benchmark entry).
-- **Marks et al. 2025.** Marks M, Marks U, Dilip R, et al. *CellSAM: a foundation model for cell segmentation.* Nature Methods [VOL:PAGES, DOI]. Cited in §1, §8 (CellSAM benchmark entry; also cited as the source of the self-reported limitation on morphologically distant cell lines).
+- **Marks et al. 2025.** Marks M, Israel U, Dilip R, et al. *CellSAM: a foundation model for cell segmentation.* Nature Methods 22, 2585–2593 (2025). doi:10.1038/s41592-025-02879-w. Cited in §1, §8 (CellSAM benchmark entry; also cited as the source of the self-reported limitation on morphologically distant cell lines).
 - **Gómez-de-Mariscal et al. 2021.** Gómez-de-Mariscal E, García-López-de-Haro C, Ouyang W, et al. *DeepImageJ: A user-friendly environment to run deep learning models in ImageJ.* Nature Methods 18:1192–1195 [DOI]. Cited in §8. Note: the second-surname form "de-Mariscal" is the preferred rendering used by the author on the v-of-record; keep as-is.
 
 ### (D) Agentic-bioimage landscape invoked in §8/§9
@@ -2455,7 +2455,7 @@ Every sentence of v0.2 preserves the assertion of its v0.1 counterpart. Per-para
 
 6. **ref-schmidt2018 (StarDist).** Schmidt U, Weigert M, Broaddus C, Myers G. Cell Detection with Star-Convex Polygons. In *Medical Image Computing and Computer-Assisted Intervention — MICCAI 2018*, Lecture Notes in Computer Science **11071**, 265–273 (2018). `doi:10.1007/978-3-030-00934-2_30`. arXiv:1806.03535.
 
-7. **ref-israel2025 (CellSAM).** Marks M, Marks U, Dilip R *et al.* CellSAM: a foundation model for cell segmentation. *Nature Methods* **22**, 2585–2593 (2025). `doi:10.1038/s41592-025-02879-w`.
+7. **ref-israel2025 (CellSAM).** Marks M, Israel U, Dilip R *et al.* CellSAM: a foundation model for cell segmentation. *Nature Methods* **22**, 2585–2593 (2025). `doi:10.1038/s41592-025-02879-w`.
 
 8. **ref-deepimagej2021 (DeepImageJ).** Gómez-de-Mariscal E, García-López-de-Haro C, Ouyang W *et al.* DeepImageJ: A user-friendly environment to run deep learning models in ImageJ. *Nature Methods* **18**, 1192–1195 (2021). `doi:10.1038/s41592-021-01262-9`. Volume and page range already correct in v0.1; iter 32 adds the clickable DOI hyperlink.
 
