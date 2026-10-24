@@ -913,8 +913,8 @@ try {
         // carries only the features that don't belong under stock File.
         await MenuRegistry.addMenu(
             "Extensions",
-            ["Connect to Hypha MCP...", "-", "Test ROI ↔ GeoJSON", "-", "Cellpose…"],
-            ["mcp",                     "-", "roi-test",          "-", "cellpose"]
+            ["Connect to Hypha MCP...", "-", "Test ROI ↔ GeoJSON"],
+            ["mcp",                     "-", "roi-test"]
         );
         console.log('Installed "Extensions" menu');
     } catch (e) {

@@ -6,7 +6,8 @@
 // NOT ship Fiji's Ridge Detection or AnalyzeSkeleton, so illumination is flattened
 // with a rolling-ball background subtraction and length is estimated from a
 // core-ImageJ binary skeleton. Interactive topology (per-lateral tracing, RSML)
-// comes from Plugins > SmartRoot > SR Explorer, not from this macro.
+// comes from Plugins > SmartRoot > Trace current image (not yet verified in
+// this build), not from this macro.
 //
 // Assumes: Set Scale has already been applied by bench.js (?scale=). If it has
 // not, every length is reported in pixels and scale_source is "none".
@@ -30,7 +31,7 @@ selectWindow("__roots_work");
 
 // --- 2. flatten illumination --------------------------------------------
 // Rolling-ball radius ~ 4x expected root width. 50 px is a reasonable default
-// for scanned plates; exposed as ridgeRadius in roots.json.
+// for scanned plates. Fixed here; not yet a setting in roots.json.
 run("Subtract Background...", "rolling=50 light");
 
 // --- 3. threshold --------------------------------------------------------
@@ -64,8 +65,9 @@ run("Select None");
 run("Skeletonize");
 
 // Total length is estimated as (skeleton pixel count x pixel width). This is the
-// standard first-order estimate; it under-reads diagonal runs by up to ~8%, so it
-// is reported as an approximation. SmartRoot tracing gives exact polyline lengths.
+// standard first-order estimate. It under-reads diagonal runs: by 1 - 1/sqrt(2),
+// about 29%, at 45 degrees, and by about 10% averaged over random orientations,
+// so it is reported as an approximation. SmartRoot tracing gives exact polyline lengths.
 getHistogram(hvals, hcounts, 256);
 skelPx = hcounts[255];
 totalLength = skelPx * pw;

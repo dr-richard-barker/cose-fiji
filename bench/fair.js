@@ -156,8 +156,9 @@ export class FAIRExporter {
           <root-length-density>${num(r.RootLengthDensity)}</root-length-density>
         </properties>
         <!-- No <geometry> element: this preset measures the skeleton in
-             aggregate and does not trace individual root polylines. Trace with
-             Plugins > SmartRoot > SR Explorer to produce full RSML geometry. -->
+             aggregate and does not trace individual root polylines. Tracing with
+             Plugins > SmartRoot > Trace current image could add full RSML
+             geometry, but that entry point is not yet verified in this build. -->
       </root>
     </plant>
   </scene>
