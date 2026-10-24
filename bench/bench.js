@@ -10,10 +10,11 @@
  *   &embed=1               hosted inside the database shell
  *
  * Two things about this CheerpJ build drive the design:
- *  1. It is single-threaded. Any macro that opens a modal dialog freezes the
- *     whole JVM with no way back except a click, so macros are validated before
- *     they run and errors surface in our own UI rather than ImageJ's.
- *  2. ImageJ boots in ~45 s. Nothing may assume window.IJ exists at load.
+ *  1. Macros run on CheerpJ's main JVM. Any macro that opens a modal dialog
+ *     blocks it with no way back except a click, so macro() runs under a
+ *     watchdog and errors surface in our own UI rather than ImageJ's. (The
+ *     upstream threadhack runtime adds worker JVMs; the presets don't use it.)
+ *  2. ImageJ takes a while to boot. Nothing may assume window.IJ exists at load.
  */
 
 import { FAIRExporter } from './fair.js';
@@ -115,7 +116,9 @@ class FIJIBench {
       // while still being labelled mm.
       const mmPerPx = 1 / pxPerMm;
       src += ` setVoxelSize(${mmPerPx}, ${mmPerPx}, 1, "${unit}");`;
-      this.scale = { pxPerMm, unit, source: 'astrobotany-aruco-marker' };
+      // Only a scale handed over with an AstroBotany record (&ref=) comes from
+      // its ArUco marker; a bare ?scale= was typed or computed elsewhere.
+      this.scale = { pxPerMm, unit, source: this.params.ref ? 'astrobotany-aruco-marker' : 'url-parameter' };
     } else {
       this.scale = { pxPerMm: null, unit: 'pixel', source: 'none' };
     }
@@ -336,7 +339,7 @@ class FIJIBench {
 
   async init() {
     this.ui();
-    this.say('Waiting for ImageJ to boot (~45 s on first load)…');
+    this.say('Waiting for ImageJ to boot (this can take a while on first load)…');
     try {
       await this.waitForImageJ();
     } catch (e) {
@@ -345,8 +348,10 @@ class FIJIBench {
     }
 
     if (!this.params.open) {
-      this.say('Open an image (File ▸ Open, or drag one in), then choose a preset.');
-      this.el.querySelector('#cb-run').disabled = false;
+      // Presets run on the image staged from ?open=; an image opened with
+      // File ▸ Open or dropped in is not wired to them yet, so keep Run disabled.
+      this.say('To run a preset, load the image with <code>?open=&lt;image url&gt;</code> '
+        + '(File ▸ Open and drag-and-drop are not connected to the presets yet).');
       return;
     }
 

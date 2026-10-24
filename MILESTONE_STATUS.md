@@ -1,23 +1,27 @@
 # CoSE FIJI Bench — verified status
 
-Last updated 2026-08-30. Every "verified" line below was measured in a running
-browser, not inferred.
+Recorded by hand on 2026-08-30; amended 2026-10-24. The logs, test images and
+outputs behind these lines were not committed, so most of them cannot be
+re-checked from this repository. Rows marked **TODO** need re-running with their
+evidence committed; rows dated 24 Oct 2026 were re-checked that day.
 
 ## Verified working
 
 | Area | Evidence |
 |---|---|
-| Static hosting | GitHub Pages serves HTTP Range (`206`, `accept-ranges: bytes`) — CheerpJ 4.2 requires it |
-| ImageJ boot | 1.54s6, Java 1.8.0_462 32-bit, 537 commands, ~45 s cold |
-| SmartRoot | `SR_Explorer` in Plugins ▸ SmartRoot; window opens, canvas interactive, TIFF renders |
-| Image handoff | `?open=` → fetch → `localFS` → `IJ.open` |
-| Calibration | `?scale=37.8` → `setVoxelSize` → title bar reads 63.86 × 54.66 mm |
-| FAIR bundle | 9-file `.zip`; validated with system `unzip` (CRC32 OK, nested paths, empty + 200 KB entries, UTF-8) |
-| AstroBotany wiring | `tsc --noEmit` clean; marker `pxPerMm` reaches `?scale=` |
+| Static hosting | GitHub Pages serves HTTP Range (`206`, `accept-ranges: bytes`) — CheerpJ 4.2 requires it. Re-checked 24 Oct 2026 with `curl -r 0-9` on `lib/ImageJ/ij.jar` |
+| ImageJ boot | ImageJ 1.54s6 starts and opens an image (local build, 24 Oct 2026). Java version, command count and cold boot time: **TODO**, not logged |
+| SmartRoot | **Not verified.** SR_Explorer's constructor throws under CheerpJ (commit f09a11c); dropping the MySQL driver stopped the start-up hang. The replacement entry point, Plugins ▸ SmartRoot ▸ Trace current image (`SR_Trace_Current`), is compiled in CI but has not been tested. **TODO** |
+| Image handoff | `?open=` → fetch → `localFS` → `IJ.open`. Re-checked 24 Oct 2026 on a local build (the ABCD v2 card opened) |
+| Calibration | `?scale=37.8` → `setVoxelSize` → title bar reads 63.86 × 54.66 mm. **TODO:** not logged |
+| FAIR bundle | 9-file `.zip` (`fair.js` `build()`); system `unzip` check (CRC32, nested paths, empty + 200 KB entries, UTF-8) **TODO:** not logged |
+| AstroBotany wiring | `tsc --noEmit` clean; marker `pxPerMm` reaches `?scale=`. **TODO:** checked in the AstroBotany repo, not logged here |
 
 ## Preset validation
 
-Synthetic images of known geometry, plus one real root TIFF.
+Synthetic images of known geometry, plus one real root TIFF. **TODO:** the
+images, their generator, the root TIFF and the run log were not committed, so
+none of these figures can be reproduced from this repository yet.
 
 | Preset | Test | Expected | Measured |
 |---|---|---|---|
@@ -49,8 +53,10 @@ thread-local, every dialog-driven command silently falls back to defaults:
 | `Analyze Particles...` | 2 of 2 | 1 of 2 |
 
 Presets therefore run through `IJ.runMacro`. The cost is that a macro *error*
-opens a modal dialog and wedges the single-threaded JVM, so `macro()` carries a
-watchdog that reports this instead of hanging.
+opens a modal dialog that blocks CheerpJ's main JVM until dismissed, so
+`macro()` carries a watchdog that reports this instead of hanging. (The
+upstream threadhack runtime adds worker JVMs for rewritten thread work; the
+presets do not use it.)
 
 **Embedded TIFF resolution beats `run("Set Scale...")`.** The quick-start images
 declare an inch resolution; lengths came out in inches while labelled mm. Fixed

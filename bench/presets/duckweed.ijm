@@ -4,9 +4,9 @@
 // Fronds are isolated on hue against dark water, then split with a watershed so
 // touching colonies still count as separate fronds.
 //
-// RGR is intentionally NOT computed here: it needs a second time point. bench.js
-// supplies it when two analyses of the same ?ref= are compared, and the field is
-// omitted rather than reported as 0 when only one image is available.
+// RGR is intentionally NOT computed here: it needs a second time point. Nothing
+// computes it yet (bench.js has no comparison of two analyses; TODO), and the
+// field is omitted rather than reported as 0.
 
 setBatchMode(true);
 setOption("BlackBackground", true);

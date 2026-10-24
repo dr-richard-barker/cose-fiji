@@ -58,9 +58,13 @@ exported metadata.
 
 ### Validation
 
-Presets were checked against synthetic images of known geometry:
+Presets were checked by hand against synthetic images of known geometry on
+30 August 2026 (see [MILESTONE_STATUS.md](MILESTONE_STATUS.md)). **TODO:** the
+test images, their generator and the run log were not committed, so these
+figures cannot be reproduced from this repository yet. Commit them and re-run
+before citing the numbers.
 
-| Preset | Expected | Measured |
+| Preset | Expected | Reported (30 Aug 2026, not reproducible yet) |
 |---|---|---|
 | rosettes | discs ⌀10/14/8/12 mm → 78.54 / 153.94 / 50.27 / 113.10 mm² | 78.60 / 153.80 / 50.24 / 113.04 |
 | rows | 4 rows @ 15.0 mm spacing | 4 rows, 15.0 mm |
@@ -116,8 +120,12 @@ npm run dev     # http-server on :8010 (Range support required by CheerpJ)
   silently fall back to defaults and give wrong answers rather than erroring.
 - Use `setVoxelSize()` rather than `run("Set Scale...")`. The latter does not
   override spatial calibration embedded in a TIFF.
-- The JVM is single-threaded: a macro error opens a modal dialog and wedges it
-  until dismissed.
+- Macros run on CheerpJ's main JVM. A macro error opens a modal dialog that
+  blocks further macros until someone dismisses it (`bench.js` `macro()` has a
+  watchdog that reports this). `index.html` also loads the upstream
+  [threadhack runtime](threadhack/runtime/README.md), which by its README starts
+  a pool of 2–10 Web Workers and sends rewritten thread work to them; the
+  presets do not rely on it, and CoSE has not verified it.
 
 ## Credits and licensing
 
@@ -132,13 +140,31 @@ calibration handoff and a FAIR exporter added.
 | [SmartRoot](https://github.com/SmartRoot/smartroot) (Lobet, Pagès, Draye) | GPL-3.0 |
 | [MorphoLibJ](https://github.com/ijpb/MorphoLibJ) | LGPL |
 | [Bio-Formats](https://www.openmicroscopy.org/bio-formats/) | GPL-2.0 |
-| CheerpJ (Leaning Technologies) | Community Edition — free for non-commercial and open-source use only |
-| This preset layer | MIT |
+| CheerpJ (Leaning Technologies) | [CheerpJ Community License](https://cheerpj.com/docs/licensing) — free for personal projects, FOSS projects and technical evaluations, with credit; business use needs a commercial licence |
+| This fork's additions (preset layer, calibration handoff, FAIR exporter) | GPL-3.0 ([LICENSE](LICENSE)) |
 | Exported data bundles | CC-BY-4.0 |
 
-**CheerpJ:** the Community Edition licence covers academic and open-source use.
-Commercial deployment requires a licence from Leaning Technologies.
+**CheerpJ:** the page loads CheerpJ 4.2 from Leaning Technologies' CDN
+(`cjrtnc.leaningtech.com`). Their [licensing page](https://cheerpj.com/docs/licensing)
+(accessed 24 Oct 2026) makes the Community License free for personal projects,
+free and open-source projects and technical evaluations, with credit, and
+requires a commercial licence for other business use. This fork is GPL-3.0, but
+CoSE is a company. **TODO:** confirm with Leaning Technologies which licence
+covers CoSE's deployment.
 
-**SmartRoot is GPL-3.0.** It is redistributed here unmodified; source is at
-<https://github.com/SmartRoot/smartroot>. Any modification made here must be
-published under GPL-3.0.
+**SmartRoot is GPL-3.0.** `prepare.sh` downloads SmartRoot's released jars,
+removes the bundled MySQL JDBC driver (it stalls start-up under CheerpJ; the
+database export cannot work in a browser anyway) and adds a small entry point,
+`SR_Trace_Current`, derived from SR_Explorer.java, whose GPL-3.0 source is in
+[`smartroot-patch/`](smartroot-patch/). SmartRoot's own source is at
+<https://github.com/SmartRoot/smartroot>.
+
+## Upstream documentation
+
+The other documents in this repository (`BUILD.md`, `CHANGES.md`, `preprint.md`,
+`threadhack/`, `imagej-examples/`, `manuscript_html/` and the rest) were written
+by the upstream ImageJ.JS authors. Each carries a banner: CoSE has not verified
+their claims, numbers, citations or file references. They are kept as received,
+except that the CellSAM reference in `preprint.md` and `manuscript_html/index.html`
+was corrected to its published form (CrossRef, doi:10.1038/s41592-025-02879-w)
+and an email address was removed from an agent log under `.svamp/`.

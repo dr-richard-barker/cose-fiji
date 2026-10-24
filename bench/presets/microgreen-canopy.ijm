@@ -1,9 +1,9 @@
 // CoSE FIJI Bench — microgreen-canopy preset
 //
 // Whole-tray canopy metrics for stands too dense to segment into individuals.
-// Vegetation is isolated on hue (HSB, "HSB Stack" in this build); uniformity is
-// the coefficient of variation of brightness inside the canopy mask, which is
-// what separates an even tray from a patchy one.
+// Vegetation is isolated on hue (HSB, "HSB Stack" in this build). Uniformity is
+// 1 - CV of canopy cover across an 8 x 6 grid of cells (section 4), which is
+// what separates an even tray from a patchy one at the same overall cover.
 
 setBatchMode(true);
 setOption("BlackBackground", true);
